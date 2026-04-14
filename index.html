@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Journal de Voyage — Playa del Carmen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+
+/* ================================================================
+   VARIABLES (estilo original)
+   ================================================================ */
+:root {
+  --water-mid:    #2e78c8;
+  --water-deep:   #1a50a0;
+  --water-light:  #4ea0e0;
+  --water-foam:   #a0d0f0;
+
+  --sand:         #e8d078;
+  --sand-mid:     #ccb458;
+  --grass-beach:  #72b848;
+  --grass-dark:   #4e8830;
+  --rock:         #8c8c8c;
+  --rock-dark:    #646464;
+
+  --ui-dark:      #182850;
+  --ui-dark2:     #0e1a38;
+  --ui-mid:       #2a3f70;
+  --ui-border:    #0c1622;
+  --ui-white:     #f0f0f8;
+  --ui-inner:     #c4d0ec;
+  --ui-shadow:    #08101e;
+
+  --txt-dark:     #181830;
+  --txt-white:    #f8f8f8;
+  --txt-gray:     #6878a8;
+  --txt-gold:     #f8d840;
+
+  --font-pixel:   'Press Start 2P', monospace;
+  --font-vt:      'VT323', monospace;
+  --r:            10px;
+}
+
+/* ================================================================
+   RESET & BODY — sin scroll en body, el scroll estará en .cards-scene
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  overflow: hidden;          /* sin scroll de página */
+}
+body {
+  background: var(--water-mid);
+  font-family: var(--font-vt);
+  color: var(--txt-dark);
+}
+
+/* ================================================================
+   PAGE SHELL — fixed, full viewport
+   ================================================================ */
+.page-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+/* ================================================================
+   BEACH BACKGROUND (sin cambios)
+   ================================================================ */
+.overworld-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.water-layer {
+  position: absolute;
+  inset: 0;
+  background-color: var(--water-mid);
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 16px,
+      transparent 16px, transparent 32px),
+    repeating-linear-gradient(180deg,
+      rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 16px,
+      transparent 16px, transparent 32px);
+}
+
+.surf-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 3px;
+  background: var(--water-foam);
+  animation: surf 3s ease-in-out infinite;
+}
+.sl-1 { bottom: 32%; animation-delay: 0s;   opacity: .5; }
+.sl-2 { bottom: 27%; animation-delay: 1s;   opacity: .4; height: 4px; }
+.sl-3 { bottom: 23%; animation-delay: 1.8s; opacity: .3; }
+
+@keyframes surf {
+  0%   { transform: scaleX(.6) translateX(-5%); opacity: 0; }
+  35%  { opacity: .55; }
+  65%  { opacity: .45; }
+  100% { transform: scaleX(1.1) translateX(3%); opacity: 0; }
+}
+
+.sand-layer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 22%;
+  background-color: var(--sand);
+  background-image: repeating-linear-gradient(90deg,
+    rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 16px,
+    transparent 16px, transparent 32px);
+}
+
+.sand-edge {
+  position: absolute;
+  bottom: 22%; left: 0; right: 0; height: 10px;
+  background: linear-gradient(to bottom, var(--water-foam), var(--sand-mid));
+}
+
+.beach-grass { position: absolute; bottom: 22%; width: 32px; height: 24px; }
+.beach-grass::before, .beach-grass::after {
+  content: ''; position: absolute; bottom: 0; width: 6px;
+  background: var(--grass-beach); border-radius: 3px 3px 0 0;
+}
+.beach-grass::before { left: 4px;  height: 20px; transform: rotate(-8deg); background: var(--grass-dark); }
+.beach-grass::after  { right: 4px; height: 16px; transform: rotate(6deg); }
+.bg-1 { left: 5%; }
+.bg-2 { left: 17%; bottom: calc(22% + 4px); }
+.bg-3 { left: 30%; }
+
+.beach-rock { position: absolute; bottom: 22%; border-radius: 50% 60% 50% 40%; box-shadow: inset -2px -2px 0 var(--rock-dark); }
+.br-1 { left: 11%; width: 14px; height: 10px; background: var(--rock); }
+.br-2 { left: 23%; width: 10px; height: 8px;  bottom: calc(22% + 2px); background: var(--rock-dark); }
+
+/* ================================================================
+   COMPACT HEADER (sin cambios)
+   ================================================================ */
+.fixed-header {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 44px;
+  background: var(--ui-dark);
+  border-bottom: 3px solid var(--ui-border);
+  box-shadow: 0 3px 0 var(--ui-shadow);
+}
+
+.header-zone {
+  font-family: var(--font-pixel);
+  font-size: 0.36rem;
+  color: var(--txt-gold);
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  padding: 2px 8px;
+  background: var(--ui-dark2);
+  border: 2px solid var(--ui-border);
+  border-radius: 4px;
+}
+
+.header-title {
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  color: var(--txt-white);
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 0 var(--ui-shadow);
+}
+
+.header-sub {
+  font-family: var(--font-pixel);
+  font-size: 0.34rem;
+  color: var(--txt-gray);
+  letter-spacing: 0.06em;
+  margin-left: auto;
+}
+
+/* ================================================================
+   CONTENT BODY — sidebar fija + contenedor de la carta activa
+   ================================================================ */
+.content-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 12px 14px 14px;
+  overflow: hidden;          /* el scroll lo maneja .cards-scene */
+}
+
+/* ================================================================
+   SIDEBAR — navegación (estilo nuevo para active)
+   ================================================================ */
+.start-menu {
+  flex-shrink: 0;
+  width: 178px;
+  align-self: start;
+  background: var(--ui-dark);
+  border: 4px solid var(--ui-border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: 0 6px 0 var(--ui-shadow), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+}
+
+.start-menu::after {
+  content: ''; position: absolute; inset: 3px;
+  border: 2px solid var(--ui-mid); border-radius: 7px;
+  pointer-events: none; z-index: 0;
+}
+
+.menu-top-bar {
+  position: relative; z-index: 1;
+  background: var(--ui-dark2);
+  border-bottom: 3px solid var(--ui-border);
+  padding: 8px 12px;
+  font-family: var(--font-pixel);
+  font-size: 0.44rem;
+  color: var(--txt-gold);
+  letter-spacing: 0.2em;
+}
+
+.menu-list {
+  position: relative; z-index: 1;
+  list-style: none;
+  padding: 6px 0;
+}
+
+.menu-item {
+  display: flex; align-items: center; gap: 4px;
+  padding: 8px 12px;
+  font-family: var(--font-pixel); font-size: 0.4rem;
+  color: var(--txt-white);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.08s linear;
+  line-height: 1.6;
+}
+
+.menu-item:hover {
+  background: var(--ui-mid);
+  border-left-color: var(--txt-gold);
+}
+
+/* ESTILO ACTIVO: muy evidente, fondo dorado, texto oscuro, borde brillante */
+.menu-item.active {
+  background: var(--txt-gold);
+  color: var(--ui-dark2);
+  border-left-color: #fff0a8;
+  box-shadow: inset 0 0 0 1px #fff8d0, 0 2px 0 rgba(0,0,0,0.2);
+  text-shadow: none;
+}
+.menu-item.active .menu-cursor {
+  color: var(--ui-dark2);
+  opacity: 1;
+  animation: blink 0.7s step-end infinite;
+}
+
+.menu-cursor { opacity: 0; min-width: 10px; font-size: 0.44rem; }
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ================================================================
+   CONTENEDOR DE CARTA ACTIVA — scroll externo, la carta crece libremente
+   ================================================================ */
+.cards-scene {
+  flex: 1;
+  overflow-y: auto;          /* scroll aquí si la carta es muy alta */
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Personalización de la barra de scroll (estética pixel) */
+.cards-scene::-webkit-scrollbar {
+  width: 8px;
+}
+.cards-scene::-webkit-scrollbar-track {
+  background: var(--ui-dark2);
+  border-radius: 4px;
+  border: 1px solid var(--ui-border);
+}
+.cards-scene::-webkit-scrollbar-thumb {
+  background: var(--ui-mid);
+  border-radius: 4px;
+  border: 1px solid var(--ui-border);
+}
+.cards-scene::-webkit-scrollbar-thumb:hover {
+  background: var(--txt-gold);
+}
+.cards-scene {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-mid) var(--ui-dark2);
+}
+
+/* ================================================================
+   CARDS — altura automática, sin scroll interno
+   ================================================================ */
+.card {
+  display: none;              /* ocultas por defecto */
+  width: 100%;
+  max-width: 100%;
+  background: var(--ui-white);
+  border: 4px solid var(--ui-border);
+  border-radius: var(--r);
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.4),
+    0 3px 0 var(--ui-shadow),
+    inset 0 0 0 2px var(--ui-inner);
+  overflow: visible;         /* sin scroll interno */
+  transition: all 0.2s ease;
+  height: auto;              /* altura según contenido */
+}
+
+.card.active-card {
+  display: block;            /* solo la activa se muestra */
+  animation: fadeSlide 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+@keyframes fadeSlide {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Headers y contenido interno */
+.entry-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 11px 16px 9px;
+  background: var(--ui-dark);
+  border-bottom: 3px solid var(--ui-border);
+  border-radius: calc(var(--r) - 3px) calc(var(--r) - 3px) 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.entry-n {
+  font-family: var(--font-pixel);
+  font-size: 0.34rem;
+  color: var(--txt-gold);
+  letter-spacing: 0.05em;
+}
+
+.entry-title-txt {
+  font-family: var(--font-pixel);
+  font-size: 0.46rem;
+  color: var(--txt-white);
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 0 var(--ui-shadow);
+}
+
+.entry-date {
+  font-family: var(--font-pixel);
+  font-size: 0.30rem;
+  color: var(--txt-gray);
+  letter-spacing: 0.05em;
+  margin-left: auto;
+}
+
+.dialogue-text {
+  padding: 14px 18px 20px;
+  font-family: var(--font-vt);
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: var(--txt-dark);
+  /* Sin límite de altura ni scroll interno */
+  max-height: none;
+  overflow-y: visible;
+}
+
+.dialogue-text p { margin-bottom: 0.85rem; }
+.dialogue-text p:last-child { margin-bottom: 0; }
+
+/* Botones multimedia */
+.media-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 8px 18px 12px;
+  border-top: 2px solid var(--ui-inner);
+  margin-top: 4px;
+  background: rgba(196, 208, 236, 0.2);
+}
+
+.pixel-btn {
+  font-family: var(--font-pixel);
+  font-size: 0.44rem;
+  background: var(--ui-dark2);
+  border: 3px solid var(--ui-border);
+  color: var(--txt-white);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.08s linear;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 0 var(--ui-shadow);
+  border-radius: 6px;
+}
+
+.pixel-btn:hover {
+  background: var(--ui-mid);
+  transform: translateY(-1px);
+  border-color: var(--txt-gold);
+  color: var(--txt-gold);
+}
+
+.pixel-btn:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 0 0 var(--ui-shadow);
+}
+
+.pixel-btn.audio-playing {
+  background: #3a5f8a;
+  border-color: var(--txt-gold);
+  color: var(--txt-gold);
+  animation: pulse-audio 0.9s infinite;
+}
+
+@keyframes pulse-audio {
+  0% { text-shadow: 0 0 0px var(--txt-gold);}
+  50% { text-shadow: 0 0 4px var(--txt-gold);}
+  100% { text-shadow: 0 0 0px var(--txt-gold);}
+}
+
+.press-a {
+  font-family: var(--font-pixel);
+  font-size: 0.46rem;
+  color: var(--txt-dark);
+  text-align: right;
+  padding: 0 14px 12px;
+  animation: blink 0.85s step-end infinite;
+}
+.press-a.end { color: #d04010; animation: none; }
+
+/* ================================================================
+   MODAL POKÉMON GEN4 (sin cambios)
+   ================================================================ */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.2s, opacity 0.2s;
+  font-family: var(--font-pixel);
+}
+
+.photo-modal.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.modal-frame {
+  background: linear-gradient(145deg, #2c3e5c, #1a2a44);
+  border: 6px double #ffd966;
+  border-radius: 16px;
+  box-shadow: 0 0 0 4px #0e1a2a, 0 12px 28px black;
+  width: 90%;
+  max-width: 580px;
+  position: relative;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.modal-top-bar {
+  background: #0f1b2c;
+  padding: 8px 12px;
+  border-bottom: 3px solid #ffd966;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6rem;
+  color: #f8e4a0;
+  text-shadow: 0 1px 0 #000;
+  letter-spacing: 0.1em;
+}
+
+.modal-top-bar span:first-child {
+  font-size: 0.55rem;
+}
+
+.modal-close {
+  background: #2a3f60;
+  border: 2px solid #6c8eb0;
+  color: #f8e080;
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.05s linear;
+}
+
+.modal-close:hover {
+  background: #5f7f9f;
+  color: white;
+  border-color: #ffd966;
+}
+
+.modal-img-container {
+  padding: 18px;
+  background: #212d44;
+  border-bottom: 3px solid #ffd966;
+  text-align: center;
+}
+
+.modal-img-container img {
+  max-width: 100%;
+  max-height: 55vh;
+  border: 4px solid #ffd966;
+  background: #0f1a28;
+  box-shadow: inset 0 0 0 2px #3a5280, 0 6px 12px black;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.modal-caption {
+  background: #0b1422;
+  padding: 8px 12px;
+  color: #b9d2f0;
+  font-size: 0.7rem;
+  text-align: center;
+  font-family: var(--font-vt);
+  letter-spacing: 0.03em;
+  border-radius: 0 0 12px 12px;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 600px) {
+  .content-body { gap: 8px; padding: 8px; flex-direction: column; }
+  .start-menu   { width: 100%; align-self: auto; }
+  .menu-list    { display: grid; grid-template-columns: 1fr 1fr; }
+  .header-sub   { display: none; }
+  .header-title { font-size: 0.44rem; }
+  .dialogue-text { font-size: 1.05rem; padding: 10px 12px 16px; }
+  .pixel-btn { font-size: 0.35rem; padding: 4px 8px; }
+  .media-buttons { padding: 6px 12px 10px; gap: 8px; }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="page-shell">
+  <div class="overworld-bg" aria-hidden="true">
+    <div class="water-layer"></div>
+    <div class="surf-line sl-1"></div>
+    <div class="surf-line sl-2"></div>
+    <div class="surf-line sl-3"></div>
+    <div class="sand-layer"></div>
+    <div class="sand-edge"></div>
+    <div class="beach-grass bg-1"></div>
+    <div class="beach-grass bg-2"></div>
+    <div class="beach-grass bg-3"></div>
+    <div class="beach-rock br-1"></div>
+    <div class="beach-rock br-2"></div>
+  </div>
+
+  <header class="fixed-header">
+    <div class="header-zone">ROUTE DES CARAÏBES</div>
+    <div class="header-title">Playa del Carmen</div>
+    <div class="header-sub">Quintana Roo · Janv. 2025</div>
+  </header>
+
+  <div class="content-body">
+    <aside class="start-menu">
+      <div class="menu-top-bar">JOURNAL</div>
+      <nav>
+        <ul class="menu-list" id="nav-list">
+          <li class="menu-item active" data-card-id="card0"><span class="menu-cursor">►</span><span>Avant de partir</span></li>
+          <li class="menu-item" data-card-id="card1"><span class="menu-cursor">►</span><span>L'arrivée</span></li>
+          <li class="menu-item" data-card-id="card2"><span class="menu-cursor">►</span><span>Quinta Avenida</span></li>
+          <li class="menu-item" data-card-id="card3"><span class="menu-cursor">►</span><span>Tulum &amp; cenotes</span></li>
+          <li class="menu-item" data-card-id="card4"><span class="menu-cursor">►</span><span>Au revoir</span></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="cards-scene" id="cards-scene">
+      <article class="card active-card" id="card0" data-photo-src="images/avant-depart.jpg" data-audio-src="audio/avant-depart.mp3">
+        <div class="entry-header">
+          <span class="entry-n">Nº001</span>
+          <span class="entry-title-txt">Avant de partir</span>
+          <span class="entry-date">sam. 18 jan. 2025 · 22:47</span>
+        </div>
+        <div class="dialogue-text">
+          <p>Ma valise est ouverte sur le lit, mais je n'arrive pas à tout faire rentrer. Je prépare mes affaires pour le plus grand voyage que j'ai fait depuis longtemps. Je dois avouer que je suis un peu nerveux. L'avion part demain à six heures du matin.</p>
+          <p>En ce moment, je finis les derniers préparatifs avec mon ami Dani. C'est à la fois rassurant et un peu agaçant.</p>
+          <p>Nous allons passer une semaine complète à Playa del Carmen, sur la côte caraïbe du Mexique. C'est la première fois que je vais dans la péninsule du Yucatán. Nous irons voir les ruines mayas de Tulum. Et si tout va bien, je nagerai dans un cenote pour la première fois de ma vie.</p>
+          <p>J'ai noté une liste de restaurants recommandés par des gens du coin. Je veux absolument goûter les tacos al pastor de la Quinta Avenida. On m'a dit que c'était incroyable. Je fais plus confiance aux locaux qu'aux guides touristiques.</p>
+          <p>Je dois me forcer à fermer l'ordinateur et aller dormir. Ce voyage va être une expérience que je n'oublierai pas de sitôt.</p>
+        </div>
+        <div class="media-buttons">
+          <button class="pixel-btn photo-btn">📷 PHOTO SOUVENIR</button>
+          <button class="pixel-btn audio-btn">🔊 NARRATION</button>
+        </div>
+        <div class="press-a">▼</div>
+      </article>
+
+      <article class="card" id="card1" data-photo-src="images/arrivee-plage.jpg" data-audio-src="audio/arrivee.mp3">
+        <div class="entry-header">
+          <span class="entry-n">Nº002</span>
+          <span class="entry-title-txt">L'arrivée</span>
+          <span class="entry-date">dim. 19 jan. 2025 · 20:13</span>
+        </div>
+        <div class="dialogue-text">
+          <p>Nous avons atterri à Cancún vers quatorze heures. La première chose que j'ai sentie en sortant de l'aéroport, c'est la chaleur. Il faisait très lourd et humide. Environ trente-trois degrés, avec une humidité qui colle à la peau. Le ciel était d'un bleu intense, sans un seul nuage.</p>
+          <p>Il y avait un petit vent venant de la mer. Juste assez pour nous rappeler que nous étions sur la côte. L'air sentait le sel, les plantes tropicales et une fleur que je n'ai pas su identifier. C'était exactement ce que j'imaginais, mais en beaucoup plus fort.</p>
+          <p>Nous avons pris un collectivo de l'aéroport jusqu'à Playa del Carmen. Environ une heure de route, bien moins cher qu'un taxi. J'ai posé mes bagages à l'hôtel et je suis allé directement à la plage, avant même de défaire ma valise.</p>
+          <p>Nous avons mangé des tacos al pastor dans un petit resto de la Quinta Avenida. Ceux dont on m'avait parlé. La réputation était méritée. J'en ai commandé trois, puis j'en ai repris deux autres.</p>
+          <p>Le soir, nous avons marché le long du Malecón pour regarder le coucher de soleil sur la mer des Caraïbes. Je suis fatigué, mais c'est une bonne fatigue. Cette première journée a déjà dépassé ce que j'attendais.</p>
+        </div>
+        <div class="media-buttons">
+          <button class="pixel-btn photo-btn">📷 PHOTO SOUVENIR</button>
+          <button class="pixel-btn audio-btn">🔊 NARRATION</button>
+        </div>
+        <div class="press-a">▼</div>
+      </article>
+
+      <article class="card" id="card2" data-photo-src="images/quinta-avenida.jpg" data-audio-src="audio/quinta.mp3">
+        <div class="entry-header">
+          <span class="entry-n">Nº003</span>
+          <span class="entry-title-txt">La Quinta Avenida</span>
+          <span class="entry-date">lun. 20 jan. 2025 · 23:01</span>
+        </div>
+        <div class="dialogue-text">
+          <p>Aujourd'hui, nous avons passé la journée à explorer la ville à pied. La Quinta Avenida était vivante dès le matin. Touristes, locaux, vendeurs, musiciens. Les boutiques étaient colorées et chaque resto essayait d'attirer les clients avec des odeurs alléchantes et des menus écrits à la main.</p>
+          <p>Il y avait des artisans qui vendaient des objets en jade, en bois sculpté et des tissus traditionnels tout le long de l'avenue. L'ambiance était festive sans être agressive. Les gens souriaient, la musique était douce. Les rues du quartier nord étaient plus calmes, presque résidentielles.</p>
+          <p>J'ai visité le Parque Fundadores et pris trop de photos, comme d'habitude. Nous avons fait du snorkeling dans le récif corallien juste devant la plage principale. L'eau était à vingt-neuf degrés et on voyait très bien. J'ai vu des poissons-perroquets et, pendant un instant, une petite tortue de mer.</p>
+          <p>J'ai acheté quelques souvenirs pour ma famille dans une boutique loin des coins à touristes. Nous avons goûté une ceviche de crevettes dans un resto dans une petite rue. C'était, sans aucun doute, l'un des meilleurs plats que j'aie jamais mangés.</p>
+          <p>Le soir, nous avons vu un concert dans un bar du centre. Un groupe jouait de la cumbia et du reggaeton. Nous avons dansé pendant deux heures sans vraiment savoir ce qu'on faisait. Personne n'avait l'air de s'en soucier.</p>
+        </div>
+        <div class="media-buttons">
+          <button class="pixel-btn photo-btn">📷 PHOTO SOUVENIR</button>
+          <button class="pixel-btn audio-btn">🔊 NARRATION</button>
+        </div>
+        <div class="press-a">▼</div>
+      </article>
+
+      <article class="card" id="card3" data-photo-src="images/cenote-tulum.jpg" data-audio-src="audio/tulum-cenote.mp3">
+        <div class="entry-header">
+          <span class="entry-n">Nº004</span>
+          <span class="entry-title-txt">Tulum &amp; les cenotes</span>
+          <span class="entry-date">mar. 21 jan. 2025 · 21:30</span>
+        </div>
+        <div class="dialogue-text">
+          <p>Je rentre d'une journée que je n'oublierai probablement jamais. Je suis assis sur le lit de l'hôtel, encore un peu humide des cenotes, et j'essaie de mettre des mots sur ce que j'ai vécu. Nous avons visité les ruines mayas de Tulum, posées sur une falaise au-dessus de la mer des Caraïbes.</p>
+          <p>Nous avons pris un bus à six heures du matin depuis Playa. Nous sommes arrivés à Tulum avant la foule, et ça a tout changé. J'ai grimpé jusqu'au temple du Castillo et je suis resté à regarder la mer en contrebas pendant plusieurs minutes, sans bouger. C'est le genre de moment où on comprend pourquoi on fait de longs voyages.</p>
+          <p>Après les ruines, nous avons pris un taxi collectif jusqu'au Gran Cenote. Je viens de nager dans un cenote pour la première fois. Je ne sais pas comment décrire l'eau autrement que : parfaite. Vingt-quatre degrés, transparente, entourée de stalactites et de lumière qui passe à travers les racines des arbres.</p>
+          <p>J'ai plongé la tête sous l'eau et j'ai ouvert les yeux. On voyait à dix mètres de profondeur sans forcer. Nous avons nagé pendant presque deux heures. J'ai fait du snorkeling à l'intérieur de la grotte. Je comprends maintenant pourquoi les Mayas voyaient les cenotes comme des portes vers un autre monde.</p>
+          <p>Le soir, nous avons dîné dans un resto au milieu de la jungle, les pieds dans le sable, sous des lampes accrochées aux arbres. Nous venons de passer l'une des meilleures journées que j'aie vécues depuis des années. Je suis épuisé et complètement heureux.</p>
+        </div>
+        <div class="media-buttons">
+          <button class="pixel-btn photo-btn">📷 PHOTO SOUVENIR</button>
+          <button class="pixel-btn audio-btn">🔊 NARRATION</button>
+        </div>
+        <div class="press-a">▼</div>
+      </article>
+
+      <!-- Card 4 : Au revoir (texte simplifié) -->
+      <article class="card" id="card4" data-photo-src="images/au-revoir-playa.jpg" data-audio-src="audio/au-revoir.mp3">
+        <div class="entry-header">
+          <span class="entry-n">Nº005</span>
+          <span class="entry-title-txt">Au revoir, Playa</span>
+          <span class="entry-date">sam. 25 jan. 2025 · 08:55</span>
+        </div>
+        <div class="dialogue-text">
+          <p>Il est neuf heures du matin. Le taxi arrive dans quarante minutes. Je viens de faire ma valise pour la dernière fois dans cette chambre. Je remets dedans les mêmes vêtements qu'il y a une semaine, plus quelques souvenirs et beaucoup de sable que je n'arrive pas à enlever. Nous avons pris notre dernier café sur la terrasse, face à la mer, en silence.</p>
+          <p>Dani a dit que ce silence, c'était le signe qu'on ne voulait pas partir. Il avait raison. Je réalise que cette semaine est passée très vite, plus vite que je ne l'imaginais. On croit toujours avoir du temps, et puis on se retrouve à compter les heures qui restent. Nous avons dit au revoir à l'hôtel. La réceptionniste s'appelait Sofía et elle nous a souhaité « buen viaje » avec un vrai sourire.</p>
+          <p>Nous allons bientôt monter dans l'avion et je ne suis pas encore tout à fait prêt. Je vais essayer de garder toutes ces images le plus longtemps possible. La couleur exacte de l'eau à Tulum, la chaleur à l'atterrissage, l'odeur du sel dans les rues.</p>
+          <p>Je viens de mettre un petit caillou de la plage dans ma poche.</p>
+          <p>Je partagerai ces photos avec tout le monde dès mon retour, même si je sais très bien qu'elles ne rendent jamais vraiment justice à la réalité. Ce voyage va rester parmi mes meilleurs souvenirs pour très longtemps. Peut-être pour toujours.</p>
+        </div>
+        <div class="media-buttons">
+          <button class="pixel-btn photo-btn">📷 PHOTO SOUVENIR</button>
+          <button class="pixel-btn audio-btn">🔊 NARRATION</button>
+        </div>
+        <div class="press-a end">■</div>
+      </article>
+    </div>
+  </div>
+</div>
+
+<!-- Modal foto -->
+<div id="photoModal" class="photo-modal">
+  <div class="modal-frame">
+    <div class="modal-top-bar">
+      <span>📸 ★ CARNET DE VOYAGE ★</span>
+      <button class="modal-close" id="closeModalBtn">FERMER</button>
+    </div>
+    <div class="modal-img-container">
+      <img id="modalImage" src="" alt="Photo du voyage">
+    </div>
+    <div class="modal-caption">
+      ⬇︎ Souvenir de Playa del Carmen ⬇︎
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    // ========== SOUND MANAGER (Efectos 8-bits con Web Audio) ==========
+    let audioCtx = null;
+    // Inicializar bajo demanda (para cumplir políticas de autoplay)
+    function initAudioContext() {
+      if (audioCtx) return audioCtx;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playBeep(frequency = 880, duration = 0.12, type = 'square', volume = 0.25) {
+      try {
+        const ctx = initAudioContext();
+        // Si el contexto está suspendido (por política del navegador), intentamos reanudar
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            playBeep(frequency, duration, type, volume);
+          }).catch(e => console.warn("AudioContext resume error", e));
+          return;
+        }
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = frequency;
+        gain.gain.value = volume;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.stop(now + duration);
+      } catch(e) { console.warn("WebAudio beep error", e); }
+    }
+
+    // Diferentes sonidos:
+    function soundClick() { playBeep(660, 0.08, 'sine', 0.2); }        // navegación menú
+    function soundPhoto() { playBeep(440, 0.1, 'square', 0.3); setTimeout(() => playBeep(660, 0.08, 'square', 0.25), 80); } // efecto "cámara"
+    function soundAudioPlay() { playBeep(523.25, 0.1, 'triangle', 0.2); } // inicio de narración
+    function soundAudioStop() { playBeep(392, 0.1, 'triangle', 0.2); }      // pausa
+    function soundError() { playBeep(220, 0.2, 'sawtooth', 0.25); }          // error (fallo al cargar audio/foto)
+
+    // ========== ELEMENTOS DOM ==========
+    const menuItems = document.querySelectorAll('.menu-item');
+    const cards = document.querySelectorAll('.card');
+    const modal = document.getElementById('photoModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Gestión de audio de narración (independiente de los SFX)
+    let currentAudio = null;
+    let currentAudioButton = null;
+
+    function stopCurrentAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+      if (currentAudioButton) {
+        currentAudioButton.classList.remove('audio-playing');
+        currentAudioButton.innerHTML = '🔊 NARRATION';
+        currentAudioButton = null;
+      }
+    }
+
+    // Función para cambiar de carta activa
+    function setActiveCard(cardId) {
+      // Sonido de navegación (solo si no es la misma carta)
+      const currentActiveCard = document.querySelector('.card.active-card');
+      if (currentActiveCard && currentActiveCard.id !== cardId) {
+        soundClick();
+      }
+      // Ocultar todas las cards
+      cards.forEach(card => {
+        card.classList.remove('active-card');
+      });
+      // Mostrar la seleccionada
+      const targetCard = document.getElementById(cardId);
+      if (targetCard) {
+        targetCard.classList.add('active-card');
+      }
+      // Actualizar clase active en el menú
+      menuItems.forEach(item => {
+        const itemCardId = item.getAttribute('data-card-id');
+        if (itemCardId === cardId) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+      // Detener audio al cambiar de entrada
+      stopCurrentAudio();
+    }
+
+    // Eventos de clic en el menú
+    menuItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetCardId = item.getAttribute('data-card-id');
+        if (targetCardId) {
+          setActiveCard(targetCardId);
+        }
+      });
+    });
+
+    // ========== MODAL FOTO con sonido ==========
+    function openModal(imgSrc) {
+      if (!imgSrc || imgSrc === "#" || imgSrc === "") {
+        modalImg.src = "";
+        modalImg.alt = "Aucune photo ajoutée pour l'instant";
+        soundError(); // feedback de que no hay foto
+      } else {
+        modalImg.src = imgSrc;
+        modalImg.alt = "Photo du voyage";
+        soundPhoto(); // efecto de cámara al abrir foto
+      }
+      modal.classList.add('active');
+    }
+    function closeModal() { modal.classList.remove('active'); }
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    const photoBtns = document.querySelectorAll('.photo-btn');
+    photoBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.card');
+        if (card) {
+          let photoSrc = card.getAttribute('data-photo-src');
+          if (!photoSrc) photoSrc = "#";
+          openModal(photoSrc);
+        }
+      });
+    });
+
+    // ========== AUDIO NARRACIÓN con sonidos de interfaz ==========
+    function playAudio(card, button) {
+      const audioSrc = card.getAttribute('data-audio-src');
+      if (!audioSrc || audioSrc === "") {
+        button.innerHTML = '⚠️ AUDIO MANQUANT';
+        soundError();
+        setTimeout(() => { button.innerHTML = '🔊 NARRATION'; }, 1200);
+        return;
+      }
+      // Si el mismo botón y está sonando, pausar
+      if (currentAudioButton === button && currentAudio && !currentAudio.paused) {
+        currentAudio.pause();
+        button.classList.remove('audio-playing');
+        button.innerHTML = '🔊 NARRATION';
+        currentAudio = null;
+        currentAudioButton = null;
+        soundAudioStop();
+        return;
+      }
+      // Parar cualquier audio actual
+      stopCurrentAudio();
+      // Reproducir nuevo audio
+      const audio = new Audio(audioSrc);
+      audio.preload = "auto";
+      audio.addEventListener('ended', () => {
+        button.classList.remove('audio-playing');
+        button.innerHTML = '🔊 NARRATION';
+        if (currentAudioButton === button) {
+          currentAudio = null;
+          currentAudioButton = null;
+        }
+      });
+      audio.addEventListener('error', () => {
+        button.innerHTML = '❌ ERREUR AUDIO';
+        button.classList.remove('audio-playing');
+        soundError();
+        setTimeout(() => { button.innerHTML = '🔊 NARRATION'; }, 1500);
+        currentAudio = null;
+        currentAudioButton = null;
+      });
+      audio.play().then(() => {
+        soundAudioPlay();
+      }).catch(err => {
+        console.warn("Audio playback error:", err);
+        button.innerHTML = '⚠️ LECTURE REFUSÉE';
+        soundError();
+        setTimeout(() => { button.innerHTML = '🔊 NARRATION'; }, 1200);
+      });
+      currentAudio = audio;
+      currentAudioButton = button;
+      button.classList.add('audio-playing');
+      button.innerHTML = '⏸️ PAUSE';
+    }
+
+    const audioBtns = document.querySelectorAll('.audio-btn');
+    audioBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.card');
+        if (card) playAudio(card, btn);
+      });
+    });
+
+    // Inicializar: sincronizar menú con la carta activa por si acaso
+    const initialActiveCard = document.querySelector('.card.active-card');
+    if (initialActiveCard && initialActiveCard.id) {
+      menuItems.forEach(item => {
+        if (item.getAttribute('data-card-id') === initialActiveCard.id) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // Pequeño detalle: al hacer clic en el botón de cerrar modal también sonido de click
+    closeModalBtn.addEventListener('click', () => { soundClick(); });
+  })();
+</script>
+</body>
+</html>
